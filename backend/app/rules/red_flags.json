@@ -1,0 +1,58 @@
+{
+  "cardiac_chest_pain": [
+    {
+      "id": "chest_radiation_or_breathing",
+      "description": "Chest pain with arm, jaw, neck, or back pain, shortness of breath, sweating, or fainting",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["chest pain", "arm pain", "jaw pain", "neck pain", "back pain", "shortness of breath", "sweating", "fainting"]
+    }
+  ],
+  "stroke_neuro": [
+    {
+      "id": "fast_stroke_symptoms",
+      "description": "Face drooping, arm weakness, speech difficulty, sudden one-sided weakness, confusion, or vision loss",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["face drooping", "arm weakness", "slurred speech", "speech difficulty", "sudden confusion", "vision loss"]
+    }
+  ],
+  "headache": [
+    {
+      "id": "dangerous_headache",
+      "description": "Sudden severe headache, worst headache, or headache with seizure, weakness, confusion, vision loss, stiff neck, fever, rash, or head injury",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["sudden severe headache", "worst headache", "seizure", "weakness", "confusion", "vision loss", "stiff neck", "high fever", "rash", "head injury"]
+    }
+  ],
+  "breathing": [
+    {
+      "id": "severe_breathing",
+      "description": "Severe breathing difficulty, blue lips, inability to speak full sentences, collapse, or unresponsiveness",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["severe breathing difficulty", "blue lips", "unable to speak full sentences", "collapse", "unresponsive"]
+    }
+  ],
+  "fever_sepsis_meningitis": [
+    {
+      "id": "fever_with_meningitis_or_sepsis_signs",
+      "description": "Fever with confusion, stiff neck, seizure, concerning rash, or unresponsiveness",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["fever", "confusion", "stiff neck", "rash", "seizure", "unresponsive"]
+    }
+  ],
+  "trauma_bleeding": [
+    {
+      "id": "severe_bleeding_or_loc",
+      "description": "Severe bleeding, seizure, loss of consciousness, or major trauma warning signs",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["severe bleeding", "uncontrolled bleeding", "seizure", "loss of consciousness", "head injury"]
+    }
+  ],
+  "anaphylaxis": [
+    {
+      "id": "airway_allergy",
+      "description": "Anaphylaxis symptoms such as throat/tongue swelling, wheezing after allergen, or allergic reaction with breathing difficulty",
+      "tier": "EMERGENCY_NOW",
+      "terms": ["anaphylaxis", "throat swelling", "tongue swelling", "lip swelling", "wheezing after allergen"]
+    }
+  ]
+}

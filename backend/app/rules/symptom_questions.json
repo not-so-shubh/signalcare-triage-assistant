@@ -1,0 +1,388 @@
+{
+  "chest_pain": [
+    {
+      "id": "chest_radiation",
+      "text": "Does the pain spread to your arm, jaw, neck, back, or shoulder?",
+      "answer_type": "multi_select",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "radiation",
+      "options": ["Arm", "Jaw", "Neck", "Back", "Shoulder", "No spreading pain"]
+    },
+    {
+      "id": "chest_shortness_breath",
+      "text": "Are you short of breath or struggling to breathe?",
+      "answer_type": "yes_no",
+      "priority": 98,
+      "red_flag_related": true,
+      "maps_to": "shortness_of_breath"
+    },
+    {
+      "id": "chest_sweating",
+      "text": "Are you sweating heavily, clammy, faint, or feeling like you might pass out?",
+      "answer_type": "yes_no",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "sweating"
+    },
+    {
+      "id": "chest_onset",
+      "text": "When did the chest pain start, and did it start suddenly?",
+      "answer_type": "text",
+      "priority": 92,
+      "red_flag_related": true,
+      "maps_to": "onset"
+    },
+    {
+      "id": "chest_severity",
+      "text": "How severe is the chest pain on a 0 to 10 scale?",
+      "answer_type": "scale",
+      "priority": 88,
+      "red_flag_related": true,
+      "maps_to": "severity"
+    },
+    {
+      "id": "chest_trigger",
+      "text": "What were you doing when it started, and does rest or antacid change it?",
+      "answer_type": "text",
+      "priority": 52,
+      "red_flag_related": false,
+      "maps_to": "trigger"
+    }
+  ],
+  "headache": [
+    {
+      "id": "headache_sudden",
+      "text": "Did the headache start suddenly or reach maximum intensity within minutes?",
+      "answer_type": "yes_no",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "sudden_onset"
+    },
+    {
+      "id": "headache_worst",
+      "text": "Is this the worst headache of your life or very different from usual headaches?",
+      "answer_type": "yes_no",
+      "priority": 98,
+      "red_flag_related": true,
+      "maps_to": "worst_headache"
+    },
+    {
+      "id": "headache_neuro",
+      "text": "Do you have weakness, confusion, speech trouble, vision loss, seizure, or fainting?",
+      "answer_type": "multi_select",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "neuro_symptoms",
+      "options": ["Weakness", "Confusion", "Speech trouble", "Vision loss", "Seizure", "Fainting", "None"]
+    },
+    {
+      "id": "headache_stiff_neck",
+      "text": "Do you have fever, stiff neck, rash, or light sensitivity?",
+      "answer_type": "multi_select",
+      "priority": 94,
+      "red_flag_related": true,
+      "maps_to": "stiff_neck",
+      "options": ["Fever", "Stiff neck", "Rash", "Light sensitivity", "None"]
+    },
+    {
+      "id": "headache_head_injury",
+      "text": "Did this headache start after a head injury?",
+      "answer_type": "yes_no",
+      "priority": 90,
+      "red_flag_related": true,
+      "maps_to": "head_injury"
+    },
+    {
+      "id": "headache_duration",
+      "text": "How long has the headache been present?",
+      "answer_type": "text",
+      "priority": 45,
+      "red_flag_related": false,
+      "maps_to": "duration"
+    }
+  ],
+  "neurological": [
+    {
+      "id": "stroke_face",
+      "text": "Is one side of the face drooping or uneven when smiling?",
+      "answer_type": "yes_no",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "face_drooping"
+    },
+    {
+      "id": "stroke_arm",
+      "text": "Is one arm weak, numb, drifting down, or hard to lift?",
+      "answer_type": "yes_no",
+      "priority": 98,
+      "red_flag_related": true,
+      "maps_to": "arm_weakness"
+    },
+    {
+      "id": "stroke_speech",
+      "text": "Is speech slurred, confused, or difficult to understand?",
+      "answer_type": "yes_no",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "speech_difficulty"
+    },
+    {
+      "id": "stroke_time",
+      "text": "What time did symptoms start, or when was the person last known well?",
+      "answer_type": "text",
+      "priority": 94,
+      "red_flag_related": true,
+      "maps_to": "onset"
+    }
+  ],
+  "breathing": [
+    {
+      "id": "breathing_blue_lips",
+      "text": "Are the lips, face, or fingertips blue or grey?",
+      "answer_type": "yes_no",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "blue_lips"
+    },
+    {
+      "id": "breathing_full_sentences",
+      "text": "Can you speak in full sentences without stopping for breath?",
+      "answer_type": "yes_no",
+      "priority": 98,
+      "red_flag_related": true,
+      "maps_to": "full_sentences"
+    },
+    {
+      "id": "breathing_chest_pain",
+      "text": "Do you also have chest pain, fainting, or severe weakness?",
+      "answer_type": "multi_select",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "chest_pain",
+      "options": ["Chest pain", "Fainting", "Severe weakness", "None"]
+    },
+    {
+      "id": "breathing_severity",
+      "text": "How severe is the breathing difficulty on a 0 to 10 scale?",
+      "answer_type": "scale",
+      "priority": 92,
+      "red_flag_related": true,
+      "maps_to": "severity"
+    },
+    {
+      "id": "breathing_history",
+      "text": "Do you have asthma, COPD, heart disease, or a previous severe breathing episode?",
+      "answer_type": "multi_select",
+      "priority": 70,
+      "red_flag_related": false,
+      "maps_to": "asthma_copd",
+      "options": ["Asthma", "COPD", "Heart disease", "Previous severe episode", "None"]
+    },
+    {
+      "id": "breathing_duration",
+      "text": "How long has this breathing problem been going on?",
+      "answer_type": "text",
+      "priority": 60,
+      "red_flag_related": false,
+      "maps_to": "duration"
+    }
+  ],
+  "fever_infection": [
+    {
+      "id": "fever_temperature",
+      "text": "What is the highest temperature measured, if known?",
+      "answer_type": "text",
+      "priority": 88,
+      "red_flag_related": false,
+      "maps_to": "temperature"
+    },
+    {
+      "id": "fever_confusion",
+      "text": "Is there confusion, extreme drowsiness, seizure, or difficulty waking?",
+      "answer_type": "yes_no",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "confusion"
+    },
+    {
+      "id": "fever_rash",
+      "text": "Is there a new rash, especially purple or not fading when pressed?",
+      "answer_type": "yes_no",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "rash"
+    },
+    {
+      "id": "fever_stiff_neck",
+      "text": "Is there a stiff neck, severe headache, or light sensitivity?",
+      "answer_type": "yes_no",
+      "priority": 94,
+      "red_flag_related": true,
+      "maps_to": "stiff_neck"
+    },
+    {
+      "id": "fever_breathing",
+      "text": "Is there breathing difficulty, blue lips, or chest pain?",
+      "answer_type": "yes_no",
+      "priority": 92,
+      "red_flag_related": true,
+      "maps_to": "breathing_difficulty"
+    },
+    {
+      "id": "fever_dehydration",
+      "text": "Are there signs of dehydration such as very little urine, dizziness, or inability to keep fluids down?",
+      "answer_type": "yes_no",
+      "priority": 78,
+      "red_flag_related": true,
+      "maps_to": "dehydration"
+    },
+    {
+      "id": "fever_immune",
+      "text": "Is the patient immune compromised, on chemotherapy, pregnant, elderly, or a young infant?",
+      "answer_type": "yes_no",
+      "priority": 72,
+      "red_flag_related": false,
+      "maps_to": "immune_compromise"
+    }
+  ],
+  "abdominal_pain": [
+    {
+      "id": "abdominal_location",
+      "text": "Where is the abdominal pain located?",
+      "answer_type": "text",
+      "priority": 76,
+      "red_flag_related": false,
+      "maps_to": "location"
+    },
+    {
+      "id": "abdominal_severity",
+      "text": "How severe is the abdominal pain on a 0 to 10 scale?",
+      "answer_type": "scale",
+      "priority": 90,
+      "red_flag_related": true,
+      "maps_to": "severity"
+    },
+    {
+      "id": "abdominal_vomiting",
+      "text": "Is there repeated vomiting, inability to keep fluids down, or vomiting blood?",
+      "answer_type": "multi_select",
+      "priority": 96,
+      "red_flag_related": true,
+      "maps_to": "vomiting",
+      "options": ["Repeated vomiting", "Cannot keep fluids down", "Vomiting blood", "No vomiting"]
+    },
+    {
+      "id": "abdominal_blood",
+      "text": "Is there blood in stool, black stool, or blood in vomit?",
+      "answer_type": "yes_no",
+      "priority": 94,
+      "red_flag_related": true,
+      "maps_to": "blood"
+    },
+    {
+      "id": "abdominal_pregnancy",
+      "text": "Is pregnancy possible or confirmed?",
+      "answer_type": "yes_no",
+      "priority": 88,
+      "red_flag_related": true,
+      "maps_to": "pregnancy_possible"
+    },
+    {
+      "id": "abdominal_fever",
+      "text": "Is there fever, fainting, or rapidly worsening pain?",
+      "answer_type": "multi_select",
+      "priority": 86,
+      "red_flag_related": true,
+      "maps_to": "fever",
+      "options": ["Fever", "Fainting", "Rapidly worsening pain", "None"]
+    }
+  ],
+  "injury_bleeding": [
+    {
+      "id": "injury_mechanism",
+      "text": "What happened and how strong was the impact or injury?",
+      "answer_type": "text",
+      "priority": 72,
+      "red_flag_related": false,
+      "maps_to": "mechanism"
+    },
+    {
+      "id": "injury_bleeding",
+      "text": "Is there heavy bleeding or bleeding that will not stop with pressure?",
+      "answer_type": "yes_no",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "bleeding_severity"
+    },
+    {
+      "id": "injury_deformity",
+      "text": "Is there obvious deformity, severe swelling, numbness, or inability to move the area?",
+      "answer_type": "multi_select",
+      "priority": 94,
+      "red_flag_related": true,
+      "maps_to": "deformity",
+      "options": ["Deformity", "Severe swelling", "Numbness", "Unable to move", "None"]
+    },
+    {
+      "id": "injury_head",
+      "text": "Was there a head injury, seizure, vomiting, or loss of consciousness?",
+      "answer_type": "multi_select",
+      "priority": 98,
+      "red_flag_related": true,
+      "maps_to": "head_injury",
+      "options": ["Head injury", "Seizure", "Vomiting", "Loss of consciousness", "None"]
+    },
+    {
+      "id": "injury_walk",
+      "text": "Can the person move the area and bear weight or walk if it is a leg injury?",
+      "answer_type": "yes_no",
+      "priority": 62,
+      "red_flag_related": false,
+      "maps_to": "ability_to_move"
+    }
+  ],
+  "general": [
+    {
+      "id": "general_duration",
+      "text": "How long has this been going on?",
+      "answer_type": "text",
+      "priority": 70,
+      "red_flag_related": false,
+      "maps_to": "duration"
+    },
+    {
+      "id": "general_severity",
+      "text": "How severe is it on a 0 to 10 scale?",
+      "answer_type": "scale",
+      "priority": 68,
+      "red_flag_related": false,
+      "maps_to": "severity"
+    },
+    {
+      "id": "general_worse",
+      "text": "Is it getting worse quickly or changing in a way that worries you?",
+      "answer_type": "yes_no",
+      "priority": 84,
+      "red_flag_related": true,
+      "maps_to": "worsening"
+    },
+    {
+      "id": "general_breathing",
+      "text": "Any breathing difficulty, chest pain, fainting, confusion, severe weakness, or uncontrolled bleeding?",
+      "answer_type": "multi_select",
+      "priority": 100,
+      "red_flag_related": true,
+      "maps_to": "general_red_flags",
+      "options": ["Breathing difficulty", "Chest pain", "Fainting", "Confusion", "Severe weakness", "Uncontrolled bleeding", "None"]
+    },
+    {
+      "id": "general_history",
+      "text": "Any important medical history, regular medications, allergies, or pregnancy status?",
+      "answer_type": "text",
+      "priority": 50,
+      "red_flag_related": false,
+      "maps_to": "medical_history"
+    }
+  ]
+}

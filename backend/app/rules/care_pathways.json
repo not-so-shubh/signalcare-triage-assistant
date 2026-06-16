@@ -1,0 +1,102 @@
+{
+  "EMERGENCY_NOW": {
+    "label": "Emergency now",
+    "urgency_message": "Call emergency services now or have someone take you to emergency care immediately. Do not drive yourself if symptoms could worsen.",
+    "what_to_do_now": [
+      "Call local emergency services immediately.",
+      "Stay with the patient if possible and monitor breathing and responsiveness.",
+      "Do not eat or drink if severe symptoms, possible stroke, severe injury, or reduced consciousness are present."
+    ],
+    "what_to_tell_provider": [
+      "Main symptom and exact time symptoms started or were last known well.",
+      "Any chest pain, breathing difficulty, neurological symptoms, bleeding, seizure, allergic reaction, or loss of consciousness.",
+      "Relevant history, medications, allergies, pregnancy status, and what has already been tried."
+    ],
+    "red_flags_to_watch": [
+      "Worsening chest pain or trouble breathing",
+      "Face drooping, arm weakness, speech difficulty, sudden confusion, or vision loss",
+      "Collapse, seizure, severe bleeding, blue lips, or swelling of the tongue or throat"
+    ],
+    "disclaimer": "Educational prototype only. This is not a diagnosis, does not replace a clinician, and emergency symptoms require immediate professional help."
+  },
+  "AE_TODAY": {
+    "label": "A&E / emergency department today",
+    "urgency_message": "Seek same-day urgent emergency department or A&E assessment today.",
+    "what_to_do_now": [
+      "Arrange same-day urgent assessment.",
+      "Avoid driving yourself if symptoms are severe, worsening, or could impair alertness.",
+      "Escalate to emergency services immediately if red flags appear."
+    ],
+    "what_to_tell_provider": [
+      "Symptom timeline, severity, and whether symptoms are worsening.",
+      "Associated symptoms such as vomiting, fever, breathing changes, bleeding, weakness, or fainting.",
+      "Medical history, medications, allergies, pregnancy possibility, and recent injuries or exposures."
+    ],
+    "red_flags_to_watch": [
+      "New chest pain with shortness of breath, sweating, fainting, or pain spreading to arm, jaw, neck, or back",
+      "New weakness, speech trouble, confusion, seizure, stiff neck, rash, or severe headache",
+      "Severe breathing difficulty, blue lips, severe bleeding, or loss of consciousness"
+    ],
+    "disclaimer": "Educational prototype only. This is not a diagnosis, does not replace a clinician, and emergency symptoms require immediate professional help."
+  },
+  "GP_URGENT": {
+    "label": "Urgent GP appointment",
+    "urgency_message": "Contact a GP, primary care clinician, nurse line, or urgent clinic for prompt advice, ideally today or within 24 hours.",
+    "what_to_do_now": [
+      "Book urgent primary care or call a nurse advice line.",
+      "Keep monitoring symptoms and avoid strenuous activity if symptoms are significant.",
+      "Escalate to emergency care if any red flag symptoms develop."
+    ],
+    "what_to_tell_provider": [
+      "Main symptom, duration, severity, and recent change.",
+      "Any relevant negatives, such as no shortness of breath or no neurological symptoms if known.",
+      "Medical history, medicines, allergies, and pregnancy status if relevant."
+    ],
+    "red_flags_to_watch": [
+      "Rapid worsening",
+      "Fainting, confusion, severe pain, breathing difficulty, blue lips, severe dehydration, or uncontrolled bleeding",
+      "Stroke-like symptoms or chest pain with radiation or shortness of breath"
+    ],
+    "disclaimer": "Educational prototype only. This is not a diagnosis, does not replace a clinician, and emergency symptoms require immediate professional help."
+  },
+  "GP_ROUTINE": {
+    "label": "Routine GP appointment",
+    "urgency_message": "Arrange a routine GP or primary care appointment, especially if symptoms persist, recur, or affect daily activities.",
+    "what_to_do_now": [
+      "Book a routine appointment or use standard local care access.",
+      "Track symptoms, triggers, temperature, pain scores, and any new symptoms.",
+      "Escalate if symptoms worsen or red flags appear."
+    ],
+    "what_to_tell_provider": [
+      "How long symptoms have been present and how they are changing.",
+      "What improves or worsens symptoms.",
+      "Current medications, allergies, and relevant medical history."
+    ],
+    "red_flags_to_watch": [
+      "Severe or worsening pain",
+      "New breathing difficulty, chest pain, weakness, confusion, fainting, severe fever, rash, or dehydration",
+      "Symptoms that become sudden, severe, or unusual for the patient"
+    ],
+    "disclaimer": "Educational prototype only. This is not a diagnosis, does not replace a clinician, and emergency symptoms require immediate professional help."
+  },
+  "SELF_CARE": {
+    "label": "Self-care with monitoring",
+    "urgency_message": "Self-care and monitoring may be reasonable based on the information provided, with clear escalation if symptoms change.",
+    "what_to_do_now": [
+      "Rest, hydrate, and use usual self-care measures appropriate for the symptom.",
+      "Monitor symptom severity, duration, and new symptoms.",
+      "Seek professional care if symptoms persist, worsen, or red flags appear."
+    ],
+    "what_to_tell_provider": [
+      "If care is later needed, share the symptom timeline, severity, triggers, and what changed.",
+      "Mention any medicines taken and any allergies.",
+      "Bring a list of relevant medical history and current medications."
+    ],
+    "red_flags_to_watch": [
+      "Chest pain with shortness of breath, sweating, fainting, or pain spreading to arm, jaw, neck, or back",
+      "Stroke-like symptoms, sudden severe headache, seizure, confusion, stiff neck, rash, or head injury",
+      "Severe breathing difficulty, blue lips, severe bleeding, allergic swelling, or loss of consciousness"
+    ],
+    "disclaimer": "Educational prototype only. This is not a diagnosis, does not replace a clinician, and emergency symptoms require immediate professional help."
+  }
+}
