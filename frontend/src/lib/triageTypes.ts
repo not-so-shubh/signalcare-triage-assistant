@@ -42,6 +42,7 @@ export type RedFlag = {
 };
 
 export type Patient = {
+  name: string | null;
   age: number | null;
   sex: string | null;
   pregnancyStatus: string | null;
@@ -137,6 +138,7 @@ export type TriageSession = {
 };
 
 export type ProviderSummary = {
+  patientName: string;
   presentingComplaint: string;
   symptomTimeline: string;
   severity: string;

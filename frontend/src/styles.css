@@ -142,8 +142,10 @@ ul {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  border: 0;
   padding: 0;
   background: transparent;
+  cursor: pointer;
   text-align: left;
 }
 
@@ -836,6 +838,15 @@ dd {
   background: var(--surface-soft);
   font-size: 0.95rem;
   line-height: 1.35;
+}
+
+.patient-context input::placeholder,
+.text-answer textarea::placeholder,
+.nl-intake-card textarea::placeholder,
+.review-edit-grid input::placeholder {
+  color: color-mix(in srgb, var(--muted) 62%, var(--surface));
+  font-weight: 560;
+  opacity: 1;
 }
 
 .context-static {

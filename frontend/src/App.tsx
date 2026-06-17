@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import LogoMark from "./components/LogoMark";
 import { DEFAULT_CARE_REGION, careTerminology, localizePathway, localizeTierLabel } from "./lib/careTerminology";
-import { DEMO_DEFINITIONS } from "./lib/demoCases";
+import { createDemoSessionBase, demoDefinitionById, DEMO_DEFINITIONS } from "./lib/demoCases";
 import { getNextQuestion, questionProgress, SYMPTOM_OPTIONS } from "./lib/questions";
 import { extractSymptomsFromText } from "./lib/symptomExtraction";
 import {
@@ -45,7 +45,13 @@ import {
   updatePatientContext,
   applyAnswerToSession
 } from "./lib/triageRules";
-import { calculateEvaluationMetrics, runPatientContextTestSuite, runTriageTestSuite } from "./lib/triageTests";
+import {
+  calculateEvaluationMetrics,
+  runDemoContextTestSuite,
+  runPatientContextTestSuite,
+  runPatientNameTestSuite,
+  runTriageTestSuite
+} from "./lib/triageTests";
 import type {
   AnswerValue,
   CarePathway,
@@ -103,7 +109,8 @@ function parseAgeInput(value: string): number | null {
   if (!value.trim()) return null;
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return null;
-  return Math.min(120, Math.max(0, Math.trunc(numeric)));
+  if (numeric < 1) return null;
+  return Math.min(120, Math.trunc(numeric));
 }
 
 function isMalePatientSex(value: string | null): boolean {
@@ -114,6 +121,7 @@ function buildDraftSummary(session: TriageSession): string {
   const associated = associatedSummary(session);
   return [
     "Provider Summary",
+    `Patient name: ${session.patient.name || "Not provided"}`,
     `Presenting complaint: ${session.presentingComplaint.primarySymptom || "Not documented"}`,
     `Timeline: ${session.presentingComplaint.duration || session.presentingComplaint.onset || "Not documented"}`,
     `Severity: ${
@@ -157,10 +165,23 @@ function App() {
     if (activeTier === "Emergency services now") emergencyRef.current?.focus();
   }, [activeTier]);
 
+  function goHome() {
+    setSession(createEmptySession());
+    setAiInput("");
+    setCopied(false);
+    setMobileTab("chat");
+    setRegion(DEFAULT_CARE_REGION);
+    setScreen("landing");
+    window.history.replaceState(null, "", window.location.pathname);
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 0);
+  }
+
   function startFresh() {
     setSession(createEmptySession());
     setAiInput("");
+    setCopied(false);
     setMobileTab("chat");
+    setRegion(DEFAULT_CARE_REGION);
     setScreen("triage");
     scrollToWorkspaceStart();
   }
@@ -183,14 +204,18 @@ function App() {
   }
 
   async function loadDemo(id: string) {
-    const demo = DEMO_DEFINITIONS.find((item) => item.id === id) ?? DEMO_DEFINITIONS[0];
-    await analyzeText(demo.input, createEmptySession());
+    const demo = demoDefinitionById(id);
+    setCopied(false);
+    setRegion(DEFAULT_CARE_REGION);
+    await analyzeText(demo.input, createDemoSessionBase(demo.id));
   }
 
   function resetTriage() {
     setSession(createEmptySession());
     setAiInput("");
+    setCopied(false);
     setMobileTab("chat");
+    setRegion(DEFAULT_CARE_REGION);
     scrollToWorkspaceStart();
   }
 
@@ -248,6 +273,7 @@ function App() {
   if (screen === "landing") {
     return (
       <LandingPage
+        onHome={goHome}
         onStart={startFresh}
         onRunDemo={() => void loadDemo("emergency_chest_pain")}
         onLoadDemo={(id) => void loadDemo(id)}
@@ -259,7 +285,7 @@ function App() {
 
   return (
     <div className="app-root triage-page">
-      <HeaderNav compact />
+      <HeaderNav compact onHome={goHome} />
 
       <main className="triage-shell" id="triage-workspace">
         <SafetyBanner emergency={activeTier === "Emergency services now"} region={region} />
@@ -366,10 +392,10 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function HeaderNav({ compact = false }: { compact?: boolean }) {
+function HeaderNav({ compact = false, onHome }: { compact?: boolean; onHome: () => void }) {
   return (
     <header className="topbar">
-      <button className="brand-button" type="button" onClick={() => scrollToId("top")} aria-label="SignalCare home">
+      <button className="brand-button" type="button" onClick={onHome} aria-label="Go to SignalCare home">
         <LogoMark variant="iconOnly" />
         <span className="brand-wordmark">
           <strong>SignalCare</strong>
@@ -388,12 +414,14 @@ function HeaderNav({ compact = false }: { compact?: boolean }) {
 }
 
 function LandingPage({
+  onHome,
   onStart,
   onRunDemo,
   onLoadDemo,
   metrics,
   testResults
 }: {
+  onHome: () => void;
   onStart: () => void;
   onRunDemo: () => void;
   onLoadDemo: (id: string) => void;
@@ -404,7 +432,7 @@ function LandingPage({
     <div className="app-root" id="top">
       {/* CTA discipline: the hero owns the primary landing action.
           The header avoids repeating "Start triage" while the hero CTA is visible. */}
-      <HeaderNav />
+      <HeaderNav onHome={onHome} />
 
       <main>
         <section className="hero-section">
@@ -707,13 +735,22 @@ function ClinicalStatePanel({
       <section className="panel patient-context">
         <p className="eyebrow">Patient context</p>
         <label>
+          <span>Patient name</span>
+          <input
+            value={session.patient.name ?? ""}
+            onChange={(event) => onUpdatePatient({ name: event.target.value })}
+            placeholder="Example: Priya Sharma"
+            autoComplete="name"
+          />
+        </label>
+        <label>
           <span>Age</span>
           <input
             type="number"
             inputMode="numeric"
-            min="0"
+            min="1"
             max="120"
-            placeholder="Optional"
+            placeholder="Example: 34"
             value={session.patient.age ?? ""}
             onChange={(event) => onUpdatePatient({ age: parseAgeInput(event.target.value) })}
           />
@@ -752,7 +789,7 @@ function ClinicalStatePanel({
           <input
             value={session.patient.knownConditions.join(", ")}
             onChange={(event) => onUpdatePatient({ knownConditions: csvToList(event.target.value) })}
-            placeholder="Diabetes, asthma"
+            placeholder="Example: diabetes, asthma"
           />
         </label>
         <label>
@@ -760,7 +797,7 @@ function ClinicalStatePanel({
           <input
             value={session.patient.medications.join(", ")}
             onChange={(event) => onUpdatePatient({ medications: csvToList(event.target.value) })}
-            placeholder="Optional"
+            placeholder="Example: metformin"
           />
         </label>
         <label>
@@ -768,7 +805,7 @@ function ClinicalStatePanel({
           <input
             value={session.patient.allergies.join(", ")}
             onChange={(event) => onUpdatePatient({ allergies: csvToList(event.target.value) })}
-            placeholder="Optional"
+            placeholder="Example: penicillin"
           />
         </label>
       </section>
@@ -1213,6 +1250,7 @@ function ProviderSummaryPanel({
   const summary = hasAssessment ? buildProviderSummary(session, region) : null;
   const associated = associatedSummary(session);
   const rows = [
+    ["Patient name", summary?.patientName ?? session.patient.name ?? "Not provided"],
     ["Presenting complaint", summary?.presentingComplaint ?? session.presentingComplaint.primarySymptom ?? "Not documented"],
     ["Timeline", summary?.symptomTimeline ?? session.presentingComplaint.duration ?? "Not documented"],
     [
@@ -1359,10 +1397,14 @@ declare global {
   interface Window {
     runSignalCareTests?: typeof runTriageTestSuite;
     runSignalCarePatientContextTests?: typeof runPatientContextTestSuite;
+    runSignalCareDemoContextTests?: typeof runDemoContextTestSuite;
+    runSignalCarePatientNameTests?: typeof runPatientNameTestSuite;
   }
 }
 
 window.runSignalCareTests = runTriageTestSuite;
 window.runSignalCarePatientContextTests = runPatientContextTestSuite;
+window.runSignalCareDemoContextTests = runDemoContextTestSuite;
+window.runSignalCarePatientNameTests = runPatientNameTestSuite;
 
 export default App;

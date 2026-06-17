@@ -1,9 +1,12 @@
 import { DEFAULT_CARE_REGION } from "./careTerminology";
+import { createDemoSessionBase, DEMO_DEFINITIONS, getDemoSession } from "./demoCases";
+import { extractSymptomsFromText } from "./symptomExtraction";
 import {
   applyAnswerToSession,
   buildProviderSummary,
   createEmptySession,
   finalizeTriage,
+  mergeExtractedSession,
   sanitizePatientContext,
   updatePatientContext
 } from "./triageRules";
@@ -389,6 +392,8 @@ export function runPatientContextTestSuite(): PatientContextTestResult[] {
 
   const emptySummary = buildProviderSummary(createEmptySession(), DEFAULT_CARE_REGION).fullText;
   const sanitizedAge = updatePatientContext(createEmptySession(), { age: 150 }).patient.age;
+  const sanitizedZeroAge = updatePatientContext(createEmptySession(), { age: 0 }).patient.age;
+  const sanitizedNegativeAge = updatePatientContext(createEmptySession(), { age: -4 }).patient.age;
   const sanitizedImported = sanitizePatientContext({
     ...createEmptySession(),
     patient: {
@@ -450,6 +455,12 @@ export function runPatientContextTestSuite(): PatientContextTestResult[] {
       `Sanitized age: ${sanitizedAge}`
     ),
     patientContextResult(
+      "age_below_one_rejected",
+      "Age below 1 is treated as not provided",
+      sanitizedZeroAge === null && sanitizedNegativeAge === null,
+      `Age 0: ${sanitizedZeroAge ?? "null"}, age -4: ${sanitizedNegativeAge ?? "null"}`
+    ),
+    patientContextResult(
       "imported_patient_context_sanitized",
       "Imported male/pregnant and placeholder context is sanitized",
       sanitizedImported.patient.pregnancyStatus === null &&
@@ -468,6 +479,202 @@ export function runPatientContextTestSuite(): PatientContextTestResult[] {
     }))
   );
   console.log(`${results.filter((result) => result.passed).length}/${results.length} patient-context tests passed`);
+  console.groupEnd();
+
+  return results;
+}
+
+export async function runDemoContextTestSuite(): Promise<PatientContextTestResult[]> {
+  const emergencyDefinition = DEMO_DEFINITIONS.find((demo) => demo.id === "emergency_chest_pain") ?? DEMO_DEFINITIONS[0];
+  const emergencyBase = createDemoSessionBase("emergency_chest_pain");
+  const emergencyExtracted = await extractSymptomsFromText(emergencyDefinition.input);
+  const emergencyDemo = mergeExtractedSession(emergencyBase, emergencyExtracted, emergencyDefinition.input);
+  const lowHeadacheDefinition = DEMO_DEFINITIONS.find((demo) => demo.id === "low_urgency_headache") ?? DEMO_DEFINITIONS[0];
+  const answeredEmergencyDemo = getDemoSession("emergency_chest_pain");
+  const lowHeadacheBase = createDemoSessionBase(lowHeadacheDefinition.id);
+  const lowHeadacheExtracted = await extractSymptomsFromText(lowHeadacheDefinition.input);
+  const lowHeadacheSession = mergeExtractedSession(lowHeadacheBase, lowHeadacheExtracted, lowHeadacheDefinition.input);
+  const resetSession = createEmptySession();
+  const placeholderStrings = [
+    "optional",
+    "diabetes, asthma",
+    "example: diabetes, asthma",
+    "example: metformin",
+    "example: penicillin",
+    "leave blank if none"
+  ];
+  const demoPatientText = DEMO_DEFINITIONS.map((demo) =>
+    [
+      demo.patient.age?.toString() ?? "",
+      demo.patient.name ?? "",
+      demo.patient.sex ?? "",
+      demo.patient.pregnancyStatus ?? "",
+      ...demo.patient.knownConditions,
+      ...demo.patient.medications,
+      ...demo.patient.allergies
+    ]
+      .join(" ")
+      .toLowerCase()
+  ).join(" ");
+
+  const results = [
+    patientContextResult(
+      "demo_emergency_context_realistic",
+      "Emergency chest pain demo includes realistic patient context",
+      emergencyDemo.patient.age === 58 &&
+        emergencyDemo.patient.name === "Raj Mehta" &&
+        emergencyDemo.patient.sex === "Male" &&
+        emergencyDemo.patient.knownConditions.includes("High blood pressure") &&
+        emergencyDemo.patient.knownConditions.includes("High cholesterol") &&
+        emergencyDemo.patient.medications.includes("Amlodipine") &&
+        emergencyDemo.patient.allergies.includes("None known") &&
+        answeredEmergencyDemo.patient.age === 58,
+      `Patient: ${emergencyDemo.patient.name}, ${emergencyDemo.patient.age}, ${emergencyDemo.patient.sex}, ${emergencyDemo.patient.knownConditions.join(", ")}`
+    ),
+    patientContextResult(
+      "demo_male_pregnancy_sanitized",
+      "Male demo patient cannot have pregnancy status",
+      emergencyBase.patient.sex === "Male" && emergencyBase.patient.pregnancyStatus === null,
+      `Pregnancy status: ${emergencyBase.patient.pregnancyStatus ?? "null"}`
+    ),
+    patientContextResult(
+      "demo_low_headache_denials_respected",
+      "Low-headache demo does not trigger emergency because denied symptoms are respected",
+      lowHeadacheSession.triage.urgencyTier === "Self-care with monitoring" &&
+        lowHeadacheSession.triage.redFlagsDetected.length === 0 &&
+        !lowHeadacheSession.associatedSymptoms.neurologicalSymptoms.includes("Vision change") &&
+        lowHeadacheSession.deniedSymptoms.includes("vision change"),
+      `Tier: ${lowHeadacheSession.triage.urgencyTier}, red flags: ${lowHeadacheSession.triage.redFlagsDetected.length}`
+    ),
+    patientContextResult(
+      "demo_context_no_placeholder_strings",
+      "Demo patient context does not contain placeholder strings",
+      placeholderStrings.every((placeholder) => !demoPatientText.includes(placeholder)),
+      "Demo patients contain only saved clinical context, not UI placeholders"
+    ),
+    patientContextResult(
+      "reset_creates_empty_patient_context",
+      "Start/reset creates empty patient context again",
+      resetSession.patient.age === null &&
+        resetSession.patient.name === null &&
+        resetSession.patient.sex === null &&
+        resetSession.patient.pregnancyStatus === null &&
+        resetSession.patient.knownConditions.length === 0 &&
+        resetSession.patient.medications.length === 0 &&
+        resetSession.patient.allergies.length === 0,
+      `Patient reset: name ${resetSession.patient.name ?? "null"}, age ${resetSession.patient.age ?? "null"}, conditions ${resetSession.patient.knownConditions.length}`
+    )
+  ];
+
+  console.group("SignalCare demo context validation suite");
+  console.table(
+    results.map((result) => ({
+      Case: result.name,
+      Passed: result.passed ? "PASS" : "FAIL",
+      Details: result.details
+    }))
+  );
+  console.log(`${results.filter((result) => result.passed).length}/${results.length} demo-context tests passed`);
+  console.groupEnd();
+
+  return results;
+}
+
+export async function runPatientNameTestSuite(): Promise<PatientContextTestResult[]> {
+  const mildHeadacheAnswers: Array<[string, AnswerValue]> = [
+    ["primary_symptom", "Headache"],
+    ["emergency_screen", "No"],
+    ["headache_duration", "6 hours"],
+    ["headache_sudden", "No"],
+    ["headache_worst", "No"],
+    ["headache_neuro", ["None"]],
+    ["headache_fever_neck", ["None"]],
+    ["headache_head_injury", "No"],
+    ["headache_different", "Similar to previous headaches"],
+    ["headache_severity", 3]
+  ];
+  const namedBase = updatePatientContext(createEmptySession(), { name: "  Priya   Sharma  " });
+  const unnamedOutcome = sessionFromAnswers(mildHeadacheAnswers).triage.urgencyTier;
+  const namedOutcome = finalizeTriage(
+    mildHeadacheAnswers.reduce(
+      (current, [questionId, answer]) => applyAnswerToSession(current, questionId, answer),
+      namedBase
+    )
+  ).triage.urgencyTier;
+  const placeholderNames = ["Example: Priya Sharma", "Optional", "Patient name"].map(
+    (value) => updatePatientContext(createEmptySession(), { name: value }).patient.name
+  );
+  const longName = `${"A".repeat(88)} Sharma`;
+  const cappedName = updatePatientContext(createEmptySession(), { name: longName }).patient.name;
+  const namedSummary = buildProviderSummary(namedBase, DEFAULT_CARE_REGION).fullText;
+  const blankSummary = buildProviderSummary(createEmptySession(), DEFAULT_CARE_REGION).fullText;
+  const resetSession = createEmptySession();
+  const expectedDemoNames = new Map([
+    ["emergency_chest_pain", "Raj Mehta"],
+    ["low_urgency_headache", "Ananya Rao"],
+    ["ambiguous_fever", "Priya Sharma"]
+  ]);
+
+  const results = [
+    patientContextResult(
+      "blank_patient_has_no_name",
+      "Blank patient has no name",
+      createEmptySession().patient.name === null,
+      `Name: ${createEmptySession().patient.name ?? "null"}`
+    ),
+    patientContextResult(
+      "placeholder_name_sanitized",
+      "Placeholder-looking names are sanitized away",
+      placeholderNames.every((value) => value === null),
+      `Sanitized placeholders: ${placeholderNames.map((value) => value ?? "null").join(", ")}`
+    ),
+    patientContextResult(
+      "long_name_capped",
+      "Long patient name is capped",
+      cappedName !== null && cappedName.length === 80,
+      `Length: ${cappedName?.length ?? 0}`
+    ),
+    patientContextResult(
+      "demo_cases_include_names",
+      "Demo cases include expected patient names",
+      DEMO_DEFINITIONS.every((demo) => createDemoSessionBase(demo.id).patient.name === expectedDemoNames.get(demo.id)),
+      DEMO_DEFINITIONS.map((demo) => `${demo.id}: ${createDemoSessionBase(demo.id).patient.name}`).join("; ")
+    ),
+    patientContextResult(
+      "reset_clears_patient_name",
+      "Start/reset clears patient name",
+      resetSession.patient.name === null,
+      `Reset name: ${resetSession.patient.name ?? "null"}`
+    ),
+    patientContextResult(
+      "patient_name_does_not_change_triage",
+      "Patient name does not change triage outcome",
+      namedOutcome === unnamedOutcome,
+      `Unnamed: ${unnamedOutcome}, named: ${namedOutcome}`
+    ),
+    patientContextResult(
+      "provider_summary_shows_name",
+      "Provider summary shows name when present",
+      namedSummary.includes("Patient name: Priya Sharma"),
+      namedSummary.split("\n").find((line) => line.startsWith("Patient name:")) ?? "Missing name line"
+    ),
+    patientContextResult(
+      "provider_summary_blank_name",
+      "Provider summary says Patient name: Not provided when blank",
+      blankSummary.includes("Patient name: Not provided"),
+      blankSummary.split("\n").find((line) => line.startsWith("Patient name:")) ?? "Missing name line"
+    )
+  ];
+
+  console.group("SignalCare patient name validation suite");
+  console.table(
+    results.map((result) => ({
+      Case: result.name,
+      Passed: result.passed ? "PASS" : "FAIL",
+      Details: result.details
+    }))
+  );
+  console.log(`${results.filter((result) => result.passed).length}/${results.length} patient-name tests passed`);
   console.groupEnd();
 
   return results;

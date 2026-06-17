@@ -19,6 +19,7 @@ import type {
 const EMERGENCY: UrgencyTier = "Emergency services now";
 
 const DEFAULT_PATIENT: Patient = {
+  name: null,
   age: null,
   sex: null,
   pregnancyStatus: null,
@@ -324,11 +325,33 @@ function parseDays(value: string | null): number | null {
 
 function sanitizeAge(age: number | null): number | null {
   if (age === null || !Number.isFinite(age)) return null;
-  return Math.min(120, Math.max(0, Math.trunc(age)));
+  if (age < 1) return null;
+  return Math.min(120, Math.trunc(age));
+}
+
+function sanitizePatientName(name: string | null): string | null {
+  const normalized = name?.replace(/\s+/g, " ").trim() ?? "";
+  const placeholderValues = new Set(["example: priya sharma", "optional", "patient name"]);
+  if (!normalized || placeholderValues.has(normalized.toLowerCase())) return null;
+  return normalized.slice(0, 80).trim();
 }
 
 function sanitizeTextList(values: string[]): string[] {
-  return [...new Set(values.map((value) => value.trim()).filter((value) => value && value.toLowerCase() !== "optional"))];
+  const placeholderValues = new Set([
+    "optional",
+    "leave blank if none",
+    "diabetes, asthma",
+    "example: diabetes, asthma",
+    "example: metformin",
+    "example: penicillin"
+  ]);
+  return [
+    ...new Set(
+      values
+        .map((value) => value.trim())
+        .filter((value) => value && !placeholderValues.has(value.toLowerCase()))
+    )
+  ];
 }
 
 function normalizeSex(value: string | null): string | null {
@@ -374,6 +397,7 @@ function syncPatientRiskFactors(session: TriageSession) {
 }
 
 function sanitizePatientContextInPlace(session: TriageSession) {
+  session.patient.name = sanitizePatientName(session.patient.name);
   session.patient.age = sanitizeAge(session.patient.age);
   session.patient.sex = normalizeSex(session.patient.sex);
   session.patient.knownConditions = sanitizeTextList(session.patient.knownConditions);
@@ -417,12 +441,16 @@ export function mergeExtractedSession(
   // LLM or simulated-AI extraction is intentionally non-authoritative. It may suggest structured fields,
   // but deterministic rules below re-check every merged signal before any urgency state is shown.
   if (extracted.patient) {
+    const patient = extracted.patient;
     next.patient = {
       ...next.patient,
-      ...extracted.patient,
-      knownConditions: mergeUnique(next.patient.knownConditions, extracted.patient.knownConditions ?? []),
-      medications: mergeUnique(next.patient.medications, extracted.patient.medications ?? []),
-      allergies: mergeUnique(next.patient.allergies, extracted.patient.allergies ?? [])
+      name: patient.name?.trim() ? patient.name : next.patient.name,
+      age: patient.age ?? next.patient.age,
+      sex: patient.sex ?? next.patient.sex,
+      pregnancyStatus: patient.pregnancyStatus ?? next.patient.pregnancyStatus,
+      knownConditions: mergeUnique(next.patient.knownConditions, patient.knownConditions ?? []),
+      medications: mergeUnique(next.patient.medications, patient.medications ?? []),
+      allergies: mergeUnique(next.patient.allergies, patient.allergies ?? [])
     };
   }
 
@@ -1105,6 +1133,7 @@ export function buildProviderSummary(session: TriageSession, region: CareRegion 
   const severity =
     finalized.presentingComplaint.severity0To10 === null ? "Not documented" : `${finalized.presentingComplaint.severity0To10}/10`;
   const tellThemScript = generateTellThemScript(finalized);
+  const patientName = finalized.patient.name || "Not provided";
   const symptomDetails = [
     `Severity: ${severity}`,
     `Location: ${finalized.presentingComplaint.location || "Not documented"}`,
@@ -1122,6 +1151,7 @@ export function buildProviderSummary(session: TriageSession, region: CareRegion 
   // The app is a care-navigation aid, not a diagnostic product.
   const lines = [
     "Provider Summary",
+    `Patient name: ${patientName}`,
     `Presenting complaint: ${finalized.presentingComplaint.primarySymptom || "Not documented"}`,
     "Timeline:",
     `- Onset: ${finalized.presentingComplaint.onset || "Not documented"}`,
@@ -1158,6 +1188,7 @@ export function buildProviderSummary(session: TriageSession, region: CareRegion 
   ];
 
   return {
+    patientName,
     presentingComplaint: finalized.presentingComplaint.primarySymptom || "Not documented",
     symptomTimeline: timeline || "Not documented",
     severity,

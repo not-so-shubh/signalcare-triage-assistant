@@ -203,7 +203,8 @@ function simulatedExtraction(input: string): Partial<TriageSession> {
 }
 
 export async function extractSymptomsFromText(input: string): Promise<Partial<TriageSession>> {
-  const llmEndpoint = import.meta.env.VITE_SIGNALCARE_LLM_ENDPOINT as string | undefined;
+  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const llmEndpoint = env?.VITE_SIGNALCARE_LLM_ENDPOINT;
 
   // A real LLM, if configured, may help with language understanding only. Its response must never
   // decide urgency directly; the caller merges the result and reruns deterministic guardrails.
