@@ -179,6 +179,15 @@ Suggested screenshots for judging:
 - Evaluation dashboard showing 33/33 tests and zero emergency misses.
 - Provider summary with export actions.
 
+## Visual QA Checklist
+
+- Desktop, tablet, and mobile layouts tested.
+- Landing page has one primary CTA in the hero.
+- Triage workspace collapses into mobile tabs.
+- Evaluation table scrolls inside its card on narrow screens.
+- Emergency and non-emergency result states remain visually distinct.
+- Patient context forms prevent invalid pregnancy state.
+
 ## Limitations
 
 - This prototype is not clinically validated.

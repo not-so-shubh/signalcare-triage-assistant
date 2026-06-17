@@ -88,6 +88,10 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function scrollToWorkspaceStart() {
+  window.setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 0);
+}
+
 function csvToList(value: string): string[] {
   return value
     .split(",")
@@ -143,6 +147,11 @@ function App() {
     [session, region]
   );
   const reviewPending = Boolean(session.aiExtraction && !session.aiExtraction.reviewed && activeTier !== "Emergency services now");
+  const resultStateVisible =
+    activeTier === "Emergency services now" ||
+    resultReady ||
+    Boolean(session.presentingComplaint.primarySymptom && !nextQuestion && !reviewPending);
+  const showAssistantNote = !session.aiExtraction && !resultStateVisible;
 
   useEffect(() => {
     if (activeTier === "Emergency services now") emergencyRef.current?.focus();
@@ -153,7 +162,7 @@ function App() {
     setAiInput("");
     setMobileTab("chat");
     setScreen("triage");
-    window.setTimeout(() => scrollToId("triage-workspace"), 50);
+    scrollToWorkspaceStart();
   }
 
   async function analyzeText(input: string, baseSession = session) {
@@ -166,9 +175,8 @@ function App() {
       setSession(next);
       setAiInput(trimmed);
       setScreen("triage");
-      if (next.triage.redFlagsDetected.length > 0) setMobileTab("safety");
-      else setMobileTab("chat");
-      window.setTimeout(() => scrollToId("triage-workspace"), 50);
+      setMobileTab("chat");
+      scrollToWorkspaceStart();
     } finally {
       setAnalyzing(false);
     }
@@ -183,6 +191,7 @@ function App() {
     setSession(createEmptySession());
     setAiInput("");
     setMobileTab("chat");
+    scrollToWorkspaceStart();
   }
 
   function answerQuestion(question: Question, answer: AnswerValue) {
@@ -190,7 +199,7 @@ function App() {
     const hasEmergencyOverride = next.triage.redFlagsDetected.length > 0;
     if (!hasEmergencyOverride && getNextQuestion(next) === null) next = finalizeTriage(next);
     setSession(next);
-    if (hasEmergencyOverride) setMobileTab("safety");
+    if (hasEmergencyOverride) setMobileTab("chat");
   }
 
   function updatePatient(updates: Partial<Patient>) {
@@ -280,16 +289,18 @@ function App() {
           </aside>
 
           <section className={`question-stage ${mobileTab === "chat" ? "mobile-visible" : ""}`} aria-label="Adaptive triage questions">
-            <div className="assistant-note">
-              <span className="assistant-icon">
-                <Sparkles aria-hidden="true" />
-              </span>
-              <div>
-                <p className="eyebrow">Signal Check</p>
-                <h1>Structured triage session</h1>
-                <p>{SAFETY_DISCLAIMER}</p>
+            {showAssistantNote && (
+              <div className="assistant-note">
+                <span className="assistant-icon">
+                  <Sparkles aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="eyebrow">Signal Check</p>
+                  <h1>Structured triage session</h1>
+                  <p>{SAFETY_DISCLAIMER}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {!session.presentingComplaint.primarySymptom && (
               <NaturalLanguageIntake

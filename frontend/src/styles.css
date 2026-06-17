@@ -17,6 +17,11 @@
   --shadow: 0 18px 50px rgba(23, 23, 23, 0.1);
   --radius: 8px;
   --container: 1180px;
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -134,6 +139,8 @@ ul {
 }
 
 .brand-button {
+  align-items: center;
+  gap: 12px;
   min-width: 0;
   padding: 0;
   background: transparent;
@@ -150,6 +157,7 @@ ul {
 .brand-wordmark {
   display: grid;
   gap: 2px;
+  line-height: 1;
   min-width: 0;
 }
 
@@ -166,6 +174,7 @@ ul {
   margin-top: 2px;
   color: var(--muted);
   font-size: 0.78rem;
+  line-height: 1.2;
 }
 
 .topbar nav {
@@ -820,13 +829,18 @@ dd {
 .nl-intake-card textarea,
 .review-edit-grid input {
   width: 100%;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
   background: var(--surface-soft);
+  font-size: 0.95rem;
+  line-height: 1.35;
 }
 
 .context-static {
+  align-content: center;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
@@ -1321,13 +1335,14 @@ dd {
 }
 
 .summary-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-top: 16px;
 }
 
 .summary-actions button {
+  width: 100%;
   min-height: 38px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1403,7 +1418,10 @@ dd {
 }
 
 .evaluation-table-wrap {
+  max-width: 100%;
   overflow: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -1493,11 +1511,27 @@ dd {
   }
 
   .hero-section {
+    gap: 20px;
     min-height: auto;
+    padding: 28px 0 28px;
   }
 
   .hero-media {
     min-height: 0;
+  }
+
+  .hero-media img {
+    height: clamp(220px, 31svh, 300px);
+  }
+
+  .hero-stat {
+    right: 14px;
+    bottom: 14px;
+    padding: 12px;
+  }
+
+  .hero-stat span {
+    font-size: 1.9rem;
   }
 
   .indexed-grid.five,
@@ -1515,6 +1549,56 @@ dd {
 
   .clinical-grid {
     gap: 12px;
+    margin-top: 10px;
+  }
+
+  .mobile-tabs {
+    position: sticky;
+    top: 142px;
+    z-index: 9;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px;
+    background: var(--surface);
+  }
+
+  .mobile-tab {
+    min-height: 38px;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 850;
+    text-transform: capitalize;
+  }
+
+  .mobile-tab.active {
+    background: var(--charcoal);
+    color: var(--surface);
+  }
+
+  .left-rail,
+  .right-rail,
+  .question-stage {
+    display: none;
+  }
+
+  .left-rail.mobile-visible,
+  .right-rail.mobile-visible,
+  .question-stage.mobile-visible {
+    display: grid;
+  }
+
+  .provider-summary {
+    max-height: none;
+  }
+
+  .summary-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -1553,25 +1637,44 @@ dd {
   }
 
   .hero-section {
-    padding-top: 34px;
+    gap: 18px;
+    padding-top: 24px;
+    padding-bottom: 22px;
   }
 
   .hero-copy h1 {
-    font-size: clamp(2.7rem, 13vw, 3.25rem);
+    font-size: clamp(2.35rem, 10.8vw, 3rem);
   }
 
   .hero-subcopy {
+    margin-top: 16px;
     font-size: 1rem;
+    line-height: 1.52;
+  }
+
+  .hero-actions {
+    margin-top: 22px;
   }
 
   .hero-media img {
-    height: 360px;
+    height: clamp(180px, 27svh, 230px);
   }
 
   .hero-stat {
-    position: static;
-    margin-top: 10px;
-    max-width: none;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    max-width: min(176px, calc(100% - 20px));
+    margin-top: 0;
+    padding: 10px;
+  }
+
+  .hero-stat span {
+    font-size: 1.45rem;
+  }
+
+  .hero-stat strong {
+    font-size: 0.76rem;
   }
 
   .trust-strip {
@@ -1660,8 +1763,55 @@ dd {
     margin-top: 10px;
   }
 
+  .summary-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .assistant-note {
-    grid-template-columns: 1fr;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .assistant-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .assistant-note h1 {
+    font-size: clamp(1.55rem, 6vw, 2rem);
+  }
+
+  .assistant-note p:last-child {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .nl-intake-card,
+  .ai-review-card {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .nl-intake-card {
+    order: -1;
+  }
+
+  .nl-intake-card h2,
+  .ai-review-card h2 {
+    margin-bottom: 4px;
+    font-size: 1.15rem;
+  }
+
+  .nl-intake-card p,
+  .ai-review-card p {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .nl-intake-card textarea {
+    min-height: 96px;
   }
 
   .question-card {

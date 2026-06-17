@@ -6,7 +6,14 @@ function has(text: string, patterns: Array<string | RegExp>): boolean {
 }
 
 function denied(text: string, term: string): boolean {
-  return new RegExp(`\\b(no|not|without|denies|deny)\\s+(?:any\\s+)?${term}\\b`, "i").test(text);
+  return new RegExp(`\\b(no|not|without|denies|deny)\\s+(?:any\\s+)?(?:${term})\\b`, "i").test(text);
+}
+
+function affirmed(text: string, patterns: Array<string | RegExp>, denialPattern: string): boolean {
+  // AI-style extraction is useful for language understanding, but every extracted symptom is treated
+  // as untrusted draft data. Basic negation handling prevents phrases such as "no vision changes"
+  // from being converted into positive red flags before deterministic guardrails validate the case.
+  return has(text, patterns) && !denied(text, denialPattern);
 }
 
 function addUnique(items: string[], value: string) {
@@ -40,7 +47,13 @@ function simulatedExtraction(input: string): Partial<TriageSession> {
     session.activeSymptomGroup = "chest";
     session.associatedSymptoms.chestPain = true;
     addUnique(positives, "Chest pain or tightness");
-  } else if (has(text, ["short of breath", "breathing problem", "breathless", "can't breathe", "cannot breathe"])) {
+  } else if (
+    affirmed(
+      text,
+      ["short of breath", "breathing problem", "breathless", "can't breathe", "cannot breathe"],
+      "shortness of breath|breathing problem|breathless|trouble breathing"
+    )
+  ) {
     session.presentingComplaint.primarySymptom = "Breathing problem";
     session.activeSymptomGroup = "breathing";
     session.associatedSymptoms.shortnessOfBreath = true;
@@ -51,7 +64,7 @@ function simulatedExtraction(input: string): Partial<TriageSession> {
   } else if (has(text, ["abdominal", "stomach", "belly"])) {
     session.presentingComplaint.primarySymptom = "Abdominal pain";
     session.activeSymptomGroup = "abdominal";
-  } else if (has(text, ["fever", "temperature", "infection"])) {
+  } else if (affirmed(text, ["fever", "temperature", "infection"], "fever|temperature|infection")) {
     session.presentingComplaint.primarySymptom = "Fever";
     session.activeSymptomGroup = "fever";
     session.associatedSymptoms.fever = true;
@@ -90,33 +103,57 @@ function simulatedExtraction(input: string): Partial<TriageSession> {
   if (has(text, ["back"])) session.associatedSymptoms.painRadiation.push("Back");
   if (has(text, ["shoulder"])) session.associatedSymptoms.painRadiation.push("Shoulder");
 
-  if (has(text, ["sweaty", "sweating", "clammy"])) session.associatedSymptoms.sweating = true;
-  if (has(text, ["nausea", "nauseous", "sick to my stomach"])) session.associatedSymptoms.nausea = true;
-  if (has(text, ["dizzy", "lightheaded", "light headed"])) session.associatedSymptoms.dizziness = true;
-  if (has(text, ["short of breath", "breathless", "can't breathe", "cannot breathe", "trouble breathing"])) {
+  if (affirmed(text, ["sweaty", "sweating", "clammy"], "sweaty|sweating|clammy")) session.associatedSymptoms.sweating = true;
+  if (affirmed(text, ["nausea", "nauseous", "sick to my stomach"], "nausea|nauseous|sick")) {
+    session.associatedSymptoms.nausea = true;
+  }
+  if (affirmed(text, ["dizzy", "lightheaded", "light headed"], "dizzy|dizziness|lightheaded|light headed")) {
+    session.associatedSymptoms.dizziness = true;
+  }
+  if (
+    affirmed(
+      text,
+      ["short of breath", "breathless", "can't breathe", "cannot breathe", "trouble breathing"],
+      "shortness of breath|breathing difficulty|trouble breathing|breathless"
+    )
+  ) {
     session.associatedSymptoms.shortnessOfBreath = true;
   }
-  if (has(text, ["fainted", "passed out", "loss of consciousness"])) session.associatedSymptoms.lossOfConsciousness = true;
+  if (affirmed(text, ["fainted", "passed out", "loss of consciousness"], "fainted|passed out|loss of consciousness")) {
+    session.associatedSymptoms.lossOfConsciousness = true;
+  }
   if (has(text, ["seizure", "convulsion"])) addUnique(session.emergencyClarification, "Seizure");
-  if (has(text, ["bleeding", "uncontrolled bleeding", "bleeding heavily"])) session.associatedSymptoms.bleeding = true;
-  if (has(text, ["rash"])) session.associatedSymptoms.rash = true;
-  if (has(text, ["vomiting", "throwing up", "threw up"])) session.associatedSymptoms.vomiting = true;
-  if (has(text, ["fever", "temperature"])) session.associatedSymptoms.fever = true;
-  if (has(text, ["confused", "confusion"])) session.associatedSymptoms.confusion = true;
-  if (has(text, ["stiff neck"])) addUnique(positives, "Stiff neck");
+  if (affirmed(text, ["bleeding", "uncontrolled bleeding", "bleeding heavily"], "bleeding|uncontrolled bleeding")) {
+    session.associatedSymptoms.bleeding = true;
+  }
+  if (affirmed(text, ["rash"], "rash")) session.associatedSymptoms.rash = true;
+  if (affirmed(text, ["vomiting", "throwing up", "threw up"], "vomiting|throwing up")) session.associatedSymptoms.vomiting = true;
+  if (affirmed(text, ["fever", "temperature"], "fever|temperature")) session.associatedSymptoms.fever = true;
+  if (affirmed(text, ["confused", "confusion"], "confusion|confused")) session.associatedSymptoms.confusion = true;
+  if (affirmed(text, ["stiff neck"], "stiff neck")) addUnique(positives, "Stiff neck");
 
   if (has(text, ["face drooping", "face droop"])) addUnique(session.associatedSymptoms.neurologicalSymptoms, "Face drooping");
   if (has(text, ["slurred speech", "speech difficulty", "can't speak"])) {
     addUnique(session.associatedSymptoms.neurologicalSymptoms, "Speech difficulty");
   }
-  if (has(text, ["weak on one side", "one-sided weakness", "one sided weakness", "arm weakness"])) {
+  if (
+    affirmed(
+      text,
+      ["weak on one side", "one-sided weakness", "one sided weakness", "arm weakness"],
+      "weakness|weak on one side|one-sided weakness|one sided weakness|arm weakness"
+    )
+  ) {
     addUnique(session.associatedSymptoms.neurologicalSymptoms, "Weakness");
   }
-  if (has(text, ["numbness", "numb on one side"])) addUnique(session.associatedSymptoms.neurologicalSymptoms, "Numbness");
-  if (has(text, ["vision loss", "vision changes", "trouble seeing"])) {
+  if (affirmed(text, ["numbness", "numb on one side"], "numbness|numb on one side")) {
+    addUnique(session.associatedSymptoms.neurologicalSymptoms, "Numbness");
+  }
+  if (affirmed(text, ["vision loss", "vision changes", "trouble seeing"], "vision change|vision changes|vision loss|trouble seeing")) {
     addUnique(session.associatedSymptoms.neurologicalSymptoms, "Vision change");
   }
-  if (has(text, ["trouble walking", "loss of balance"])) addUnique(session.associatedSymptoms.neurologicalSymptoms, "Trouble walking");
+  if (affirmed(text, ["trouble walking", "loss of balance"], "trouble walking|loss of balance")) {
+    addUnique(session.associatedSymptoms.neurologicalSymptoms, "Trouble walking");
+  }
 
   if (has(text, ["allergic reaction", "anaphylaxis"])) addUnique(positives, "Allergic reaction");
   if (has(text, ["swelling", "swollen"])) addUnique(positives, "Swelling");
