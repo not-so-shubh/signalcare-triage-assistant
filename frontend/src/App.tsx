@@ -1330,7 +1330,10 @@ function ProviderSummaryPanel({
 function EvaluationDashboard({ results, metrics }: { results: TriageTestResult[]; metrics: ReturnType<typeof calculateEvaluationMetrics> }) {
   return (
     <section className="section-band evaluation-section" id="evaluation">
-      <SectionHeading label="Evaluation" title="Safety evaluation dashboard" />
+      <div className="evaluation-heading">
+        <h2>Safety evaluation dashboard</h2>
+        <p>Deterministic tests verify emergency sensitivity, safety overrides, and Gemini extraction boundaries.</p>
+      </div>
       <article className="ai-boundary-card">
         <div>
           <p className="eyebrow">AI Integration</p>
