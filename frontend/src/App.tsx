@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import LogoMark from "./components/LogoMark";
 import { DEFAULT_CARE_REGION, careTerminology, localizePathway, localizeTierLabel } from "./lib/careTerminology";
-import { createDemoSessionBase, demoDefinitionById, DEMO_DEFINITIONS } from "./lib/demoCases";
+import { demoDefinitionById, DEMO_DEFINITIONS, getDemoSession } from "./lib/demoCases";
 import { getNextQuestion, questionProgress, SYMPTOM_OPTIONS } from "./lib/questions";
 import { extractSymptomsFromText } from "./lib/symptomExtraction";
 import {
@@ -204,11 +204,15 @@ function App() {
     }
   }
 
-  async function loadDemo(id: string) {
+  function loadDemo(id: string) {
     const demo = demoDefinitionById(id);
     setCopied(false);
     setRegion(DEFAULT_CARE_REGION);
-    await analyzeText(demo.input, createDemoSessionBase(demo.id));
+    setSession(getDemoSession(demo.id));
+    setAiInput(demo.input);
+    setMobileTab("chat");
+    setScreen("triage");
+    scrollToWorkspaceStart();
   }
 
   function resetTriage() {
@@ -276,8 +280,8 @@ function App() {
       <LandingPage
         onHome={goHome}
         onStart={startFresh}
-        onRunDemo={() => void loadDemo("emergency_chest_pain")}
-        onLoadDemo={(id) => void loadDemo(id)}
+        onRunDemo={() => loadDemo("emergency_chest_pain")}
+        onLoadDemo={loadDemo}
         metrics={metrics}
         testResults={testResults}
       />

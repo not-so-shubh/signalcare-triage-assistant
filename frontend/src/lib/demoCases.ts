@@ -79,7 +79,11 @@ export const DEMO_DEFINITIONS: DemoDefinition[] = [
       medications: ["Paracetamol as needed"],
       allergies: ["None known"]
     },
-    expectedTier: "Adaptive fever questions"
+    expectedTier: "Adaptive fever questions",
+    answers: [
+      ["primary_symptom", "Fever"],
+      ["emergency_screen", "No"]
+    ]
   }
 ];
 

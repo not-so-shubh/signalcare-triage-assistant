@@ -1,5 +1,6 @@
 import { DEFAULT_CARE_REGION } from "./careTerminology";
 import { createDemoSessionBase, DEMO_DEFINITIONS, getDemoSession } from "./demoCases";
+import { getNextQuestion } from "./questions";
 import { extractSymptomsFromText } from "./symptomExtraction";
 import {
   applyAnswerToSession,
@@ -485,15 +486,11 @@ export function runPatientContextTestSuite(): PatientContextTestResult[] {
 }
 
 export async function runDemoContextTestSuite(): Promise<PatientContextTestResult[]> {
-  const emergencyDefinition = DEMO_DEFINITIONS.find((demo) => demo.id === "emergency_chest_pain") ?? DEMO_DEFINITIONS[0];
   const emergencyBase = createDemoSessionBase("emergency_chest_pain");
-  const emergencyExtracted = await extractSymptomsFromText(emergencyDefinition.input);
-  const emergencyDemo = mergeExtractedSession(emergencyBase, emergencyExtracted, emergencyDefinition.input);
-  const lowHeadacheDefinition = DEMO_DEFINITIONS.find((demo) => demo.id === "low_urgency_headache") ?? DEMO_DEFINITIONS[0];
-  const answeredEmergencyDemo = getDemoSession("emergency_chest_pain");
-  const lowHeadacheBase = createDemoSessionBase(lowHeadacheDefinition.id);
-  const lowHeadacheExtracted = await extractSymptomsFromText(lowHeadacheDefinition.input);
-  const lowHeadacheSession = mergeExtractedSession(lowHeadacheBase, lowHeadacheExtracted, lowHeadacheDefinition.input);
+  const emergencyDemo = getDemoSession("emergency_chest_pain");
+  const lowHeadacheSession = getDemoSession("low_urgency_headache");
+  const feverSession = getDemoSession("ambiguous_fever");
+  const feverNextQuestion = getNextQuestion(feverSession);
   const resetSession = createEmptySession();
   const placeholderStrings = [
     "optional",
@@ -528,8 +525,14 @@ export async function runDemoContextTestSuite(): Promise<PatientContextTestResul
         emergencyDemo.patient.knownConditions.includes("High cholesterol") &&
         emergencyDemo.patient.medications.includes("Amlodipine") &&
         emergencyDemo.patient.allergies.includes("None known") &&
-        answeredEmergencyDemo.patient.age === 58,
+        emergencyDemo.triage.urgencyTier === "Emergency services now",
       `Patient: ${emergencyDemo.patient.name}, ${emergencyDemo.patient.age}, ${emergencyDemo.patient.sex}, ${emergencyDemo.patient.knownConditions.join(", ")}`
+    ),
+    patientContextResult(
+      "demo_launch_no_ai_extraction_path",
+      "Demo launch sessions do not use AI extraction",
+      [emergencyDemo, lowHeadacheSession, feverSession].every((session) => session.aiExtraction === null),
+      `AI extraction states: ${[emergencyDemo, lowHeadacheSession, feverSession].map((session) => session.aiExtraction?.sourceText ?? "null").join(", ")}`
     ),
     patientContextResult(
       "demo_male_pregnancy_sanitized",
@@ -539,12 +542,18 @@ export async function runDemoContextTestSuite(): Promise<PatientContextTestResul
     ),
     patientContextResult(
       "demo_low_headache_denials_respected",
-      "Low-headache demo does not trigger emergency because denied symptoms are respected",
+      "Low-headache demo does not trigger emergency",
       lowHeadacheSession.triage.urgencyTier === "Self-care with monitoring" &&
-        lowHeadacheSession.triage.redFlagsDetected.length === 0 &&
-        !lowHeadacheSession.associatedSymptoms.neurologicalSymptoms.includes("Vision change") &&
-        lowHeadacheSession.deniedSymptoms.includes("vision change"),
+        lowHeadacheSession.triage.redFlagsDetected.length === 0,
       `Tier: ${lowHeadacheSession.triage.urgencyTier}, red flags: ${lowHeadacheSession.triage.redFlagsDetected.length}`
+    ),
+    patientContextResult(
+      "demo_fever_reaches_warning_question",
+      "Ambiguous fever demo reaches fever-specific safety question",
+      feverSession.presentingComplaint.primarySymptom === "Fever" &&
+        feverNextQuestion?.id === "fever_warning" &&
+        feverSession.patient.name === "Priya Sharma",
+      `Next question: ${feverNextQuestion?.id ?? "none"}, patient: ${feverSession.patient.name ?? "none"}`
     ),
     patientContextResult(
       "demo_context_no_placeholder_strings",

@@ -135,7 +135,7 @@ Current deterministic suite:
 - Emergency misses: 0
 - Safety override pass rate: 100%
 - Patient-context validation: 10/10
-- Demo-context validation: 5/5
+- Demo-context validation: 7/7
 - Patient-name validation: 8/8
 - AI integration validation: 5/5
 
@@ -150,6 +150,8 @@ AI integration validation covers:
 - Emergency chest pain still escalating through deterministic guardrails
 - Low-urgency headache not emergency-escalating
 - Local fallback extraction working without `GEMINI_API_KEY`
+
+Demo validation confirms demo launches are deterministic and do not call the Gemini extraction path.
 
 ## How to Run Locally
 
