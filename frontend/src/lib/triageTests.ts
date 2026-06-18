@@ -680,6 +680,72 @@ export async function runPatientNameTestSuite(): Promise<PatientContextTestResul
   return results;
 }
 
+export async function runAIIntegrationTestSuite(): Promise<PatientContextTestResult[]> {
+  const emergencyInput = "I have chest tightness for 30 minutes and it is spreading to my left arm. I feel sweaty.";
+  const lowHeadacheInput = "I have a mild headache like ones I have had before. No weakness, no vision changes, no fever.";
+  const fallbackInput = "I have chest pain and feel sweaty.";
+
+  const emergencyExtracted = await extractSymptomsFromText(emergencyInput);
+  const emergencySession = mergeExtractedSession(createEmptySession(), emergencyExtracted, emergencyInput);
+  const lowHeadacheExtracted = await extractSymptomsFromText(lowHeadacheInput);
+  const lowHeadacheSession = mergeExtractedSession(createEmptySession(), lowHeadacheExtracted, lowHeadacheInput);
+  const fallbackExtracted = await extractSymptomsFromText(fallbackInput);
+  const fallbackSession = mergeExtractedSession(createEmptySession(), fallbackExtracted, fallbackInput);
+
+  const results = [
+    patientContextResult(
+      "ai_extraction_populates_symptoms",
+      "AI extraction path can populate symptom fields",
+      Boolean(emergencySession.presentingComplaint.primarySymptom) &&
+        emergencySession.presentingComplaint.duration === "30 minutes" &&
+        emergencySession.associatedSymptoms.painRadiation.includes("Left arm") &&
+        emergencySession.associatedSymptoms.sweating === true,
+      `Symptom: ${emergencySession.presentingComplaint.primarySymptom}, duration: ${emergencySession.presentingComplaint.duration}, radiation: ${emergencySession.associatedSymptoms.painRadiation.join(", ")}`
+    ),
+    patientContextResult(
+      "denied_vision_not_red_flag",
+      "Denied symptoms do not become red flags",
+      !lowHeadacheSession.associatedSymptoms.neurologicalSymptoms.includes("Vision change") &&
+        lowHeadacheSession.deniedSymptoms.includes("vision change") &&
+        lowHeadacheSession.triage.redFlagsDetected.length === 0,
+      `Denied: ${lowHeadacheSession.deniedSymptoms.join(", ") || "none"}, red flags: ${lowHeadacheSession.triage.redFlagsDetected.length}`
+    ),
+    patientContextResult(
+      "ai_emergency_chest_pain_escalates",
+      "Emergency chest pain still escalates after AI extraction",
+      emergencySession.triage.urgencyTier === "Emergency services now",
+      `Actual tier: ${emergencySession.triage.urgencyTier}`
+    ),
+    patientContextResult(
+      "ai_low_headache_not_emergency",
+      "Low headache does not emergency-escalate after AI extraction",
+      lowHeadacheSession.triage.urgencyTier === "Self-care with monitoring" &&
+        lowHeadacheSession.triage.redFlagsDetected.length === 0,
+      `Actual tier: ${lowHeadacheSession.triage.urgencyTier}, red flags: ${lowHeadacheSession.triage.redFlagsDetected.length}`
+    ),
+    patientContextResult(
+      "ai_keyless_fallback_works",
+      "App works without AI key using local fallback extraction",
+      Boolean(fallbackSession.presentingComplaint.primarySymptom) &&
+        fallbackSession.aiExtraction?.confidenceNotes.some((note) => note.includes("Local simulated extraction")) === true,
+      `Symptom: ${fallbackSession.presentingComplaint.primarySymptom}, notes: ${fallbackSession.aiExtraction?.confidenceNotes.join(" | ")}`
+    )
+  ];
+
+  console.group("SignalCare AI integration validation suite");
+  console.table(
+    results.map((result) => ({
+      Case: result.name,
+      Passed: result.passed ? "PASS" : "FAIL",
+      Details: result.details
+    }))
+  );
+  console.log(`${results.filter((result) => result.passed).length}/${results.length} AI-integration tests passed`);
+  console.groupEnd();
+
+  return results;
+}
+
 export function calculateEvaluationMetrics(results: TriageTestResult[]): EvaluationMetrics {
   const expectedEmergency = results.filter((result) => result.expectedEmergency);
   const emergencyHits = expectedEmergency.filter((result) => result.actualTier === "Emergency services now");

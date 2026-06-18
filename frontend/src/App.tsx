@@ -47,6 +47,7 @@ import {
 } from "./lib/triageRules";
 import {
   calculateEvaluationMetrics,
+  runAIIntegrationTestSuite,
   runDemoContextTestSuite,
   runPatientContextTestSuite,
   runPatientNameTestSuite,
@@ -1326,6 +1327,18 @@ function EvaluationDashboard({ results, metrics }: { results: TriageTestResult[]
   return (
     <section className="section-band evaluation-section" id="evaluation">
       <SectionHeading label="Evaluation" title="Safety evaluation dashboard" />
+      <article className="ai-boundary-card">
+        <div>
+          <p className="eyebrow">AI Integration</p>
+          <h3>Google Gemini extraction, deterministic triage authority.</h3>
+        </div>
+        <p>
+          The `/api/extract-symptoms` endpoint can use Gemini to structure patient language into draft symptom fields,
+          duration, severity, associated symptoms, and denied symptoms. It is not allowed to decide red flags, emergency
+          overrides, urgency tier, or provider safety copy. SignalCare reruns deterministic guardrails after every
+          extraction, and those rules always override the AI draft.
+        </p>
+      </article>
       <div className="metric-grid">
         {[
           ["Total test cases", metrics.totalCases.toString()],
@@ -1396,6 +1409,7 @@ function RecentAnswers({ session }: { session: TriageSession }) {
 declare global {
   interface Window {
     runSignalCareTests?: typeof runTriageTestSuite;
+    runSignalCareAIIntegrationTests?: typeof runAIIntegrationTestSuite;
     runSignalCarePatientContextTests?: typeof runPatientContextTestSuite;
     runSignalCareDemoContextTests?: typeof runDemoContextTestSuite;
     runSignalCarePatientNameTests?: typeof runPatientNameTestSuite;
@@ -1403,6 +1417,7 @@ declare global {
 }
 
 window.runSignalCareTests = runTriageTestSuite;
+window.runSignalCareAIIntegrationTests = runAIIntegrationTestSuite;
 window.runSignalCarePatientContextTests = runPatientContextTestSuite;
 window.runSignalCareDemoContextTests = runDemoContextTestSuite;
 window.runSignalCarePatientNameTests = runPatientNameTestSuite;

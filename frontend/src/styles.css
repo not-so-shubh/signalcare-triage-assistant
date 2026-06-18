@@ -1397,6 +1397,29 @@ dd {
   scroll-margin-top: 96px;
 }
 
+.ai-boundary-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  background: var(--surface);
+}
+
+.ai-boundary-card h3 {
+  max-width: 420px;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  line-height: 1.08;
+}
+
+.ai-boundary-card p:last-child {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1517,6 +1540,7 @@ dd {
   .hero-section,
   .safety-section,
   .demo-layout,
+  .ai-boundary-card,
   .clinical-grid {
     grid-template-columns: 1fr;
   }
